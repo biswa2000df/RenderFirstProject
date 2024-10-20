@@ -1,34 +1,14 @@
-# Step 1: Build stage
-# Use an official Maven image to build the application
-FROM maven:3.6.3-jdk-11 as build
+# Use an official OpenJDK runtime as a parent image
+FROM openjdk:17-jdk-alpine
 
 # Set the working directory inside the container
 WORKDIR /app
 
-# Copy the pom.xml and download the dependencies
-COPY pom.xml .
+# Copy the built jar file into the container
+COPY target/Heroku_Application.jar /app/app1.jar
 
-# Download the dependencies (faster)
-RUN mvn dependency:go-offline
-
-# Copy the source code into the container
-COPY src /app/src
-
-# Package the application
-RUN mvn clean install
-
-# Step 2: Run stage
-# Use an OpenJDK base image to run the application
-FROM openjdk:17-jdk-slim
-
-# Set the working directory inside the container
-WORKDIR /app
-
-# Copy the jar from the build stage
-COPY --from=build /app/target/Heroku_Application.jar app.jar
-
-# Expose the port the app will run on
+# Expose port 8080 to the outside world (the default Spring Boot port)
 EXPOSE 8080
 
-# Run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+# Run the Spring Boot application
+ENTRYPOINT ["java", "-jar", "/app/app1.jar"]
