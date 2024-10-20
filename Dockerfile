@@ -10,18 +10,19 @@ RUN mvn clean package -DskipTests
 FROM openjdk:17-jdk-alpine
 
 # Install required packages
-RUN apk add --no-cache \
+RUN apt-get update && apt-get install -y \
     chromium \
-    chromium-chromedriver \
-    && ln -sf /usr/bin/chromium-browser /usr/bin/chromium \
-    && ln -sf /usr/bin/chromedriver /usr/bin/chromedriver
+    chromium-driver \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set environment variables for Chrome
+ENV CHROME_BIN=/usr/bin/chromium
+ENV CHROME_DRIVER=/usr/bin/chromedriver
+ENV DISPLAY=:99
 
 WORKDIR /app
 COPY --from=build /app/target/Heroku_Application.jar /app/app.jar
 COPY BiswajitJARSeleniumDockerIsworkingorNot.jar /app/BiswajitJARSeleniumDockerIsworkingorNot.jar
-
-# Set the DISPLAY environment variable for Chrome
-ENV DISPLAY=:0
 
 EXPOSE 8080
 ENTRYPOINT ["java", "-jar", "/app/app.jar"]
