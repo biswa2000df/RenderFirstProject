@@ -13,8 +13,8 @@ FROM openjdk:17-jdk-alpine
 RUN apk add --no-cache \
     chromium \
     chromium-chromedriver \
-    && ln -s /usr/bin/chromium-browser /usr/bin/chromium \
-    && ln -s /usr/bin/chromedriver /usr/bin/chromedriver
+    && ln -sf /usr/bin/chromium-browser /usr/bin/chromium \
+    && ln -sf /usr/bin/chromedriver /usr/bin/chromedriver
 
 WORKDIR /app
 COPY --from=build /app/target/Heroku_Application.jar /app/app.jar
