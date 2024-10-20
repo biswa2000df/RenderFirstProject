@@ -1,10 +1,3 @@
-# Stage 1: Build the Spring Boot app
-FROM maven:3.8.4-openjdk-17 AS build
-WORKDIR /app
-COPY pom.xml .
-COPY src ./src
-RUN mvn clean package -DskipTests
-
 FROM debian:bullseye-slim
 
 # Update package lists and install wget
@@ -31,6 +24,13 @@ CMD ["Xvfb", ":1", "-screen", "0", "1024x768x24", "&"]
 CMD ["x11vnc", "-forever", "-usepw", "-create"]
 
 
+
+# Stage 1: Build the Spring Boot app
+FROM maven:3.8.4-openjdk-17 AS build
+WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
 # Stage 2: Create the final image
 FROM openjdk:17-jdk-alpine
