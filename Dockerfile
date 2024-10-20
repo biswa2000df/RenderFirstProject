@@ -1,14 +1,13 @@
-# Use an official OpenJDK runtime as a parent image
-FROM openjdk:17-jdk-alpine
-
-# Set the working directory inside the container
+# Stage 1: Build the Spring Boot app
+FROM maven:3.8.4-openjdk-17 AS build
 WORKDIR /app
+COPY pom.xml .
+COPY src ./src
+RUN mvn clean package -DskipTests
 
-# Copy the built jar file into the container
-COPY target/Heroku_Application.jar /app/app1.jar
-
-# Expose port 8080 to the outside world (the default Spring Boot port)
+# Stage 2: Create the final image
+FROM openjdk:17-jdk-alpine
+WORKDIR /app
+COPY --from=build /app/target/Heroku_Application.jar /app/app.jar
 EXPOSE 8080
-
-# Run the Spring Boot application
-ENTRYPOINT ["java", "-jar", "/app/app1.jar"]
+ENTRYPOINT ["java", "-jar", "/app/app.jar"]
