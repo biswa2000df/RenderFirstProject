@@ -9,13 +9,15 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @RestController
 @CrossOrigin(origins = "*")
 public class DemoController {
 
-    @GetMapping("/api/hello")
+    @GetMapping("/api/Welcome")
     @Operation(summary = "Welcome Data")
     public String hello() {
         return "Welcome to Biswajit Framework";
@@ -27,10 +29,13 @@ public class DemoController {
     @GetMapping("/api/greet")
     @Operation(summary = "Check your Name")
     public String greet(@RequestParam String name) {
-        return "Hello, " + name + "!";
+        return "Hello, My Dear " + name + "!";
     }
 
-    @GetMapping("/run-jar")
+
+    String videoURL = null;
+
+    @GetMapping("/RunAutomationScript")
     @Operation(summary = "Run Automation Script")
     public String runJarFile() {
         StringBuilder output = new StringBuilder();
@@ -50,6 +55,15 @@ public class DemoController {
             String line;
             while ((line = reader.readLine()) != null) {
                 output.append(line).append("\n");
+
+                // Check for the BrowserStack Video URL in the current line
+                String regex = "BrowserStack Video URL: (https?://[\\w/\\-?=%.]+)";
+                Pattern pattern = Pattern.compile(regex);
+                Matcher matcher = pattern.matcher(line);
+
+                if (matcher.find()) {
+                    videoURL = matcher.group(1);  // Extract the URL
+                }
             }
 
             // Wait for the process to complete
@@ -62,6 +76,12 @@ public class DemoController {
         }
 
         return output.toString();
+    }
+
+    @GetMapping("/api/ScriptVideoURL")
+    @Operation(summary = "Automation Script Video URL")
+    public String GetVideoURL() {
+        return videoURL;
     }
 
 }
