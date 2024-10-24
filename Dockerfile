@@ -16,14 +16,16 @@ RUN apk update && apk add --no-cache bash curl chromium chromium-chromedriver
 ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
 ENV CHROME_PATH=/usr/lib/chromium/chrome
 
-# Set up shared memory
-RUN mkdir -p /app && chmod -R 777 /app && mount -t tmpfs none /dev/shm
+
 
 # Copy the app files
 COPY --from=build /app/target/Heroku_Application.jar /app/app.jar
 COPY BiswajitJARSeleniumDockerIsworkingorNot.jar /app/BiswajitJARSeleniumDockerIsworkingorNot.jar
 COPY Main_Controller.xlsx /app/Main_Controller.xlsx
 COPY /DataSheet /app/DataSheet
+
+# Print Chrome and ChromeDriver version for debugging
+RUN chromium-browser --version && chromedriver --version
 
 # Expose the port and run the app
 EXPOSE 8080
