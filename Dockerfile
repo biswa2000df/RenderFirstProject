@@ -10,17 +10,11 @@ FROM openjdk:17-jdk-alpine
 WORKDIR /app
 
 # Install dependencies for Chrome
-RUN apk update && apk add --no-cache bash curl wget unzip
+RUN apk update && apk add --no-cache bash curl chromium chromium-chromedriver
 
-# Install Chrome
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    apt install -y ./google-chrome-stable_current_amd64.deb && \
-    rm ./google-chrome-stable_current_amd64.deb
-
-# Install ChromeDriver
-RUN wget -O /tmp/chromedriver.zip https://chromedriver.storage.googleapis.com/$(curl -sS https://chromedriver.storage.googleapis.com/LATEST_RELEASE)/chromedriver_linux64.zip && \
-    unzip /tmp/chromedriver.zip -d /usr/local/bin/ && \
-    rm /tmp/chromedriver.zip
+# Set ChromeDriver path
+ENV CHROMEDRIVER_PATH=/usr/bin/chromedriver
+ENV CHROME_PATH=/usr/lib/chromium/chrome
 
 # Copy the app files
 COPY --from=build /app/target/Heroku_Application.jar /app/app.jar
