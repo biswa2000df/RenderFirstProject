@@ -29,8 +29,6 @@ COPY BiswajitJARSeleniumDockerIsworkingorNot.jar /app/BiswajitJARSeleniumDockerI
 COPY Main_Controller.xlsx /app/Main_Controller.xlsx
 COPY /DataSheet /app/DataSheet
 
-# Print Chrome and ChromeDriver version for debugging
-RUN chromium-browser --version && chromedriver --version
 
 # Expose the port and run the app
 EXPOSE 8090
