@@ -41,34 +41,34 @@ public class DemoController {
 
 
 
-    private static final String API_URL = "https://renderfirstproject.onrender.com/api/sendMail";
-    private final RestTemplate restTemplate = new RestTemplate();
-
-    // Trigger every 5 minutes (you can adjust the cron expression as needed)
-    @Scheduled(cron = "0 */1 * * * *")
-    public void callApi() {
-        try {
-            String response = restTemplate.getForObject(API_URL, String.class);
-            System.out.println("API Response: " + response);
-        } catch (Exception e) {
-            System.err.println("Error calling API: " + e.getMessage());
-        }
-    }
-
-    @Autowired
-    private JavaMailSender mailSender;
-
-    @GetMapping("/api/sendMail")
-    @Operation(summary = "Mail Send")
-    public String sendEmail() {
-        SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("kanhabiswajitsahoo11@gmail.com");
-        message.setSubject("subject");
-        message.setText("body");
-
-        mailSender.send(message);
-        return "Mail Send Successfully";
-    }
+//    private static final String API_URL = "https://renderfirstproject.onrender.com/api/sendMail";
+//    private final RestTemplate restTemplate = new RestTemplate();
+//
+//    // Trigger every 5 minutes (you can adjust the cron expression as needed)
+//    @Scheduled(cron = "0 */1 * * * *")
+//    public void callApi() {
+//        try {
+//            String response = restTemplate.getForObject(API_URL, String.class);
+//            System.out.println("API Response: " + response);
+//        } catch (Exception e) {
+//            System.err.println("Error calling API: " + e.getMessage());
+//        }
+//    }
+//
+//    @Autowired
+//    private JavaMailSender mailSender;
+//
+//    @GetMapping("/api/sendMail")
+//    @Operation(summary = "Mail Send")
+//    public String sendEmail() {
+//        SimpleMailMessage message = new SimpleMailMessage();
+//        message.setTo("kanhabiswajitsahoo11@gmail.com");
+//        message.setSubject("subject");
+//        message.setText("body");
+//
+//        mailSender.send(message);
+//        return "Mail Send Successfully";
+//    }
 
 
 
