@@ -41,34 +41,65 @@ public class DemoController {
 
 
 
-//    private static final String API_URL = "https://renderfirstproject.onrender.com/api/sendMail";
-//    private final RestTemplate restTemplate = new RestTemplate();
-//
-//    // Trigger every 5 minutes (you can adjust the cron expression as needed)
-//    @Scheduled(cron = "0 */1 * * * *")
-//    public void callApi() {
-//        try {
-//            String response = restTemplate.getForObject(API_URL, String.class);
-//            System.out.println("API Response: " + response);
-//        } catch (Exception e) {
-//            System.err.println("Error calling API: " + e.getMessage());
-//        }
-//    }
-//
-//    @Autowired
-//    private JavaMailSender mailSender;
-//
-//    @GetMapping("/api/sendMail")
-//    @Operation(summary = "Mail Send")
-//    public String sendEmail() {
-//        SimpleMailMessage message = new SimpleMailMessage();
-//        message.setTo("kanhabiswajitsahoo11@gmail.com");
-//        message.setSubject("subject");
-//        message.setText("body");
-//
-//        mailSender.send(message);
-//        return "Mail Send Successfully";
-//    }
+    private static final String API_URL = "https://https://renderfirstproject.onrender.com/api/sendMail";
+    private final RestTemplate restTemplate = new RestTemplate();
+
+    @Scheduled(cron = "0 0 9 * * *") // Every day at 9 AM
+    public void callApiAt9AM() {
+        callApi();
+    }
+
+    @Scheduled(cron = "0 0 10 * * *") // Every day at 10 AM
+    public void callApiAt10AM() {
+        callApi();
+    }
+
+    @Scheduled(cron = "0 0 17 * * *") // Every day at 5 PM
+    public void callApiAt5PM() {
+        callApi();
+    }
+
+    @Scheduled(cron = "0 0 18 * * *") // Every day at 6 PM
+    public void callApiAt6PM() {
+        callApi();
+    }
+
+
+
+    public void callApi() {
+        try {
+            String response = restTemplate.getForObject(API_URL, String.class);
+            System.out.println("API Response: " + response);
+        } catch (Exception e) {
+            System.err.println("Error calling API: " + e.getMessage());
+        }
+    }
+
+    String mailBody = "Dear Team,\n" +
+            "\n" +
+            "This is a friendly reminder to ensure that you punch in when you arrive at the office and punch out before you leave for the day.\n" +
+            "\n" +
+            "Thank you for your cooperation!\n" +
+            "\n" +
+            "Best regards,\n" +
+            "Biswajit sahoo\n" +
+            "QA Engineer\n" +
+            "Mahindra & Mahindra Financial Services Limited";
+
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @GetMapping("/api/sendMail")
+    @Operation(summary = "Mail Send")
+    public String sendEmail() {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo("sahoo.biswajit@mahindra.com","yengal.dharam@mahindra.com","ugale.shubham@mahindra.com","mahajan.ashish25@mahindra.com","palande.sourabh@mahfin.com");
+        message.setSubject("Reminder: Punch In and Out for Attendance Compliance");
+        message.setText(mailBody);
+
+        mailSender.send(message);
+        return "Mail Send Successfully";
+    }
 
 
 
