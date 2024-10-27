@@ -41,7 +41,7 @@ public class DemoController {
 
 
 
-    private static final String API_URL = "https://https://renderfirstproject.onrender.com/api/sendMail";
+    private static final String API_URL = "https://renderfirstproject.onrender.com/api/sendMail";
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Scheduled(cron = "0 0 9 * * *") // Every day at 9 AM
@@ -93,7 +93,7 @@ public class DemoController {
     @Operation(summary = "Mail Send")
     public String sendEmail() {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("sahoo.biswajit@mahindra.com","yengal.dharam@mahindra.com","ugale.shubham@mahindra.com","mahajan.ashish25@mahindra.com","palande.sourabh@mahfin.com");
+        message.setTo("sahoo.biswajit@mahindra.com","yengal.dharam@mahindra.com","ugale.shubham@mahindra.com","mahajan.ashish25@mahindra.com","palande.sourabh@mahfin.com","namratashete38@gmail.com");
         message.setSubject("Reminder: Punch In and Out for Attendance Compliance");
         message.setText(mailBody);
 
