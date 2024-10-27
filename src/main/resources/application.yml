@@ -1,0 +1,31 @@
+server:
+  port: 8080
+
+spring:
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: biswajitsahookanha11@gmail.com
+    password: lveshguhuyjmvglw
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+
+
+  logging:
+    level:
+      root: DEBUG
+    console:
+      enabled: true
+
+
+
+
+
+#jarFilePath: C:\Users\mahes\Downloads\AutomationSpringBoot\AutomationSpringBoot\BISWAJIT-HYBRID-FRAMEWORK.jar
+
+
+

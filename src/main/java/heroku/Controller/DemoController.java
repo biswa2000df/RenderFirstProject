@@ -1,14 +1,21 @@
 package heroku.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.RestTemplate;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -33,55 +40,37 @@ public class DemoController {
     }
 
 
-    String videoURL = null;
 
-    @GetMapping("/RunAutomationScript")
-    @Operation(summary = "Run Automation Script")
-    public String runJarFile() {
-        StringBuilder output = new StringBuilder();
+    private static final String API_URL = "https://renderfirstproject.onrender.com/api/sendMail";
+    private final RestTemplate restTemplate = new RestTemplate();
 
+    // Trigger every 5 minutes (you can adjust the cron expression as needed)
+    @Scheduled(cron = "0 */1 * * * *")
+    public void callApi() {
         try {
-            // Command to execute the JAR file
-            String jarFilePath = System.getProperty("user.dir") + File.separator + "BiswajitJARSeleniumDockerIsworkingorNot.jar";
-            System.out.println("Jar file path: " + jarFilePath);
-
-            ProcessBuilder processBuilder = new ProcessBuilder("java", "-jar", jarFilePath);
-
-            // Start the process
-            Process process = processBuilder.start();
-
-            // Capture the output from the JAR file
-            BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-            String line;
-            while ((line = reader.readLine()) != null) {
-                output.append(line).append("\n");
-
-                // Check for the BrowserStack Video URL in the current line
-                String regex = "BrowserStack Video URL: (https?://[\\w/\\-?=%.]+)";
-                Pattern pattern = Pattern.compile(regex);
-                Matcher matcher = pattern.matcher(line);
-
-                if (matcher.find()) {
-                    videoURL = matcher.group(1);  // Extract the URL
-                }
-            }
-
-            // Wait for the process to complete
-            int exitCode = process.waitFor();
-            output.append("JAR exited with code: ").append(exitCode);
-
+            String response = restTemplate.getForObject(API_URL, String.class);
+            System.out.println("API Response: " + response);
         } catch (Exception e) {
-            e.printStackTrace();
-            return "Error running the JAR file: " + e.getMessage();
+            System.err.println("Error calling API: " + e.getMessage());
         }
-
-        return output.toString();
     }
 
-    @GetMapping("/api/ScriptVideoURL")
-    @Operation(summary = "Automation Script Video URL")
-    public String GetVideoURL() {
-        return videoURL;
+    @Autowired
+    private JavaMailSender mailSender;
+
+    @GetMapping("/api/sendMail")
+    @Operation(summary = "Mail Send")
+    public String sendEmail() {
+        SimpleMailMessage message = new SimpleMailMessage();
+        message.setTo("kanhabiswajitsahoo11@gmail.com");
+        message.setSubject("subject");
+        message.setText("body");
+
+        mailSender.send(message);
+        return "Mail Send Successfully";
     }
+
+
+
 
 }
