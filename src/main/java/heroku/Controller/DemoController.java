@@ -42,6 +42,7 @@ public class DemoController {
 
 
     private static final String API_URL = "https://renderfirstproject.onrender.com/api/sendMail";
+    private static final String Every_5MIN_API_URL = "https://renderfirstproject.onrender.com/api/Welcome";
     private final RestTemplate restTemplate = new RestTemplate();
 
     @Scheduled(cron = "0 0 9 * * *") // Every day at 9 AM
@@ -65,6 +66,19 @@ public class DemoController {
     }
 
 
+    @Scheduled(cron = "0 */5 * * * *") //
+    public void callApiAtEvery5MIN() {
+        continuousCallApi();
+    }
+
+    public void continuousCallApi() {
+        try {
+            String response = restTemplate.getForObject(Every_5MIN_API_URL, String.class);
+            System.out.println("API Response: " + response);
+        } catch (Exception e) {
+            System.err.println("Error calling API: " + e.getMessage());
+        }
+    }
 
     public void callApi() {
         try {
@@ -93,7 +107,7 @@ public class DemoController {
     @Operation(summary = "Mail Send")
     public String sendEmail() {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("sahoo.biswajit@mahindra.com","yengal.dharam@mahindra.com","ugale.shubham@mahindra.com","mahajan.ashish25@mahindra.com","palande.sourabh@mahfin.com","namratashete38@gmail.com");
+        message.setTo("sahoo.biswajit@mahindra.com", "namratashete38@gmail.com");
         message.setSubject("Reminder: Punch In and Out for Attendance Compliance");
         message.setText(mailBody);
 
