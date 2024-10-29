@@ -74,7 +74,7 @@ public class DemoController {
     public void continuousCallApi() {
         try {
             String response = restTemplate.getForObject(Every_5MIN_API_URL, String.class);
-            System.out.println("API Response: " + response);
+//            System.out.println("API Response: " + response);
         } catch (Exception e) {
             System.err.println("Error calling API: " + e.getMessage());
         }
