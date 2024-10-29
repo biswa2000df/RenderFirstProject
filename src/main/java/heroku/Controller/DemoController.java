@@ -45,22 +45,22 @@ public class DemoController {
     private static final String Every_5MIN_API_URL = "https://renderfirstproject.onrender.com/api/Welcome";
     private final RestTemplate restTemplate = new RestTemplate();
 
-    @Scheduled(cron = "0 0 9 * * *") // Every day at 9 AM
+    @Scheduled(cron = "0 30 3 * * *") // Every day at 9 AM
     public void callApiAt9AM() {
         callApi();
     }
 
-    @Scheduled(cron = "0 0 10 * * *") // Every day at 10 AM
+    @Scheduled(cron = "0 30 4 * * *") // Every day at 10 AM
     public void callApiAt10AM() {
         callApi();
     }
 
-    @Scheduled(cron = "0 0 17 * * *") // Every day at 5 PM
+    @Scheduled(cron = "0 30 11 * * *") // Every day at 5 PM
     public void callApiAt5PM() {
         callApi();
     }
 
-    @Scheduled(cron = "0 0 18 * * *") // Every day at 6 PM
+    @Scheduled(cron = "0 30 12 * * *") // Every day at 6 PM
     public void callApiAt6PM() {
         callApi();
     }
