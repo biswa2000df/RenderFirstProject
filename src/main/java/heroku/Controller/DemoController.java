@@ -1,23 +1,42 @@
 package heroku.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.scheduling.annotation.Scheduled;
-import org.springframework.web.bind.annotation.CrossOrigin;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.client.RestTemplate;
+import org.springframework.web.multipart.MultipartFile;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.InputStreamReader;
+import java.io.*;
+import java.net.MalformedURLException;
+import java.nio.file.*;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 
 @RestController
@@ -66,7 +85,7 @@ public class DemoController {
     }
 
 
-    @Scheduled(cron = "0 */10 * * * *") //
+    @Scheduled(cron = "0 */20 * * * *") //
     public void callApiAtEvery5MIN() {
         continuousCallApi();
     }
@@ -114,6 +133,295 @@ public class DemoController {
         mailSender.send(message);
         return "Mail Send Successfully";
     }
+
+
+
+    private static final String FILE_NAME = System.getProperty("user.dir") + File.separator + "data.xlsx";
+
+    public static void writeDataToExcel(List<String> data) throws IOException {
+        Workbook workbook;
+        File file = new File(FILE_NAME);
+
+        if (file.exists()) {
+            workbook = new XSSFWorkbook(new FileInputStream(file));
+        } else {
+            workbook = new XSSFWorkbook();
+            workbook.createSheet("Data");
+        }
+
+        Sheet sheet = workbook.getSheet("Data");
+        int rowCount = sheet.getLastRowNum();
+
+        Row row = sheet.createRow(++rowCount);
+        for (int i = 0; i < data.size(); i++) {
+            Cell cell = row.createCell(i);
+            cell.setCellValue(data.get(i));
+        }
+
+        try (FileOutputStream fos = new FileOutputStream(FILE_NAME)) {
+            workbook.write(fos);
+        }
+
+        workbook.close();
+    }
+
+    public static InputStream getExcelFile() throws IOException {
+        return new FileInputStream(FILE_NAME);
+    }
+
+    @PostMapping("/save")
+    @Operation(summary = "Enter Data Daily Basic")
+    public ResponseEntity<String> saveData(
+            @RequestParam String Si_No,
+            @RequestParam String DATE,
+            @RequestParam String Work_Done,
+            @RequestParam String In_Time,
+            @RequestParam String Out_Time) {
+        try {
+            writeDataToExcel(Arrays.asList(Si_No, DATE, Work_Done, In_Time, Out_Time));
+            return ResponseEntity.status(HttpStatus.CREATED).body("Data saved successfully in Excel sheet.");
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving data: " + e.getMessage());
+        }
+    }
+
+    @GetMapping("/download/{filename:.+}") // Accept any filename including those with dots
+    @Operation(summary = "Download ExcelSheet File")
+    public ResponseEntity<byte[]> downloadExcel(@PathVariable String filename) {
+        File file = new File(System.getProperty("user.dir") + File.separator + filename); // Specify the directory where files are stored
+        if (!file.exists()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null); // Return 404 if the file does not exist
+        }
+
+        try (InputStream inputStream = new FileInputStream(file)) {
+            byte[] bytes = inputStream.readAllBytes(); // Read the file into a byte array
+            HttpHeaders headers = new HttpHeaders();
+            headers.setContentDispositionFormData("attachment", file.getName()); // Set the content disposition for download
+            headers.setContentType(MediaType.APPLICATION_OCTET_STREAM); // Set the content type
+            return new ResponseEntity<>(bytes, headers, HttpStatus.OK); // Return the response entity
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null); // Handle the error
+        }
+    }
+
+
+    String uploadedFileName = "";
+    private static final String UPLOAD_DIR = System.getProperty("user.dir") + File.separator ; // Set the upload directory
+
+    @Operation(summary = "Upload a file", description = "Uploads a file to the server")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "File uploaded successfully"),
+            @ApiResponse(responseCode = "400", description = "Invalid file", content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(hidden = true)))
+    })
+    @PostMapping(value = "/api/upload", consumes = { MediaType.MULTIPART_FORM_DATA_VALUE })
+    public ResponseEntity<String> uploadFile(@RequestParam("file")
+            MultipartFile file)
+    {
+        try {
+            // Validate file
+            if (file.isEmpty()) {
+                return ResponseEntity.badRequest().body("Please select a file to upload");
+            }
+
+            // Save the file locally
+            Path path = Paths.get(UPLOAD_DIR + file.getOriginalFilename());
+            Files.createDirectories(path.getParent()); // Create directories if not exists
+            Files.write(path, file.getBytes());
+
+            uploadedFileName = file.getOriginalFilename();
+            return ResponseEntity.ok("File uploaded successfully: " + file.getOriginalFilename());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("File upload failed: " + e.getMessage());
+        }
+    }
+
+    @Operation(summary = "Delete a file", description = "Deletes a specified file from the server")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "File deleted successfully"),
+            @ApiResponse(responseCode = "404", description = "File not found", content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(hidden = true)))
+    })
+    @DeleteMapping("/api/delete/{filename:.+}")
+    public ResponseEntity<String> deleteFile(@PathVariable String filename) {
+        try {
+            Path path = Paths.get(UPLOAD_DIR + filename);
+            Files.deleteIfExists(path);
+            return ResponseEntity.ok("File deleted successfully: " + filename);
+        } catch (NoSuchFileException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("File not found: " + filename);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Could not delete file: " + e.getMessage());
+        }
+    }
+
+
+
+    @GetMapping("/api/MotiExcelSheet/WorkingHourCount")
+    @Operation(summary = "MotiExcelSheet WorkingHourCount")
+    public String MotiExcelsheet() {
+
+        String excelFilePath = System.getProperty("user.dir") + File.separator + uploadedFileName;
+        try (FileInputStream fis = new FileInputStream(excelFilePath);
+             XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
+
+            // Access the desired sheet
+            XSSFSheet sheet = workbook.getSheet("Sheet1");
+
+            List<String> updatedTime = new ArrayList<String>();
+
+            int i=0;//for column count
+
+
+            for (int rowIndex = 0; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
+                Row row = sheet.getRow(rowIndex);
+
+                if (rowIndex < 4) {
+                    continue;
+                }
+
+                for (Cell cell : row) {
+                    i++;
+                    // Print cell values based on the cell type
+                    String cellValue =  getCellValues(cell);
+//                    System.out.println(cellValue);
+                    if (cell.getColumnIndex() != 0) {
+                        updatedTime.add(checkAndGetUpdatedTime(cellValue));
+                    }
+                }
+                System.out.println("********** Move to the next line after each row ***********"); // Move to the next line after each row
+
+
+                int lastRowNum = sheet.getLastRowNum();
+//                System.out.println("lastrow number = " + lastRowNum);
+                Row newRow = sheet.createRow(lastRowNum + 1);
+
+                //create cell
+                for(int k = 1; k<i; k++) {
+                    newRow.createCell(k).setCellValue(updatedTime.get(k-1));
+                }
+
+
+
+
+
+                // Initialize total monthly working minutes
+                int totalMonthlyWorkingMinutes = 0;
+
+// Calculate total monthly working minutes from updatedTime list
+                for (int l = 0; l < updatedTime.size(); l++) {
+                    String timeString = updatedTime.get(l);
+
+                    // Split the time string by "."
+                    String[] parts = timeString.split("\\.");
+                    int hours = Integer.parseInt(parts[0]); // Get hours part
+                    int minutes = 0;
+
+                    // If there is a minutes part, convert it to minutes
+                    if (parts.length > 1) {
+                        minutes = Integer.parseInt(parts[1]) * 6; // Convert decimal part to minutes
+                    }
+
+                    // Add to total working minutes
+                    totalMonthlyWorkingMinutes += (hours * 60) + minutes;
+                }
+
+// Convert total minutes to hours and remaining minutes
+                int totalMonthlyWorkingHour = totalMonthlyWorkingMinutes / 60; // Total hours
+                int remainingMinutes = totalMonthlyWorkingMinutes % 60; // Remaining minutes
+
+// Output total hours and minutes
+//                System.out.println("Total Monthly Working Hours: " + totalMonthlyWorkingHour + " hours and " + remainingMinutes + " minutes");
+
+// Assuming you want to put total monthly working hours and minutes in the new row at column `i`
+                newRow.createCell(i).setCellValue(totalMonthlyWorkingHour + "." + remainingMinutes);
+
+
+
+                try (FileOutputStream fileOut = new FileOutputStream(excelFilePath)) {
+                    workbook.write(fileOut);
+                }
+//                System.out.println(updatedTime);
+//                System.out.println("Excel file updated successfully!");
+                break;
+
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return "Total Hours updated successfully!";
+
+    }
+
+
+    private static String  getCellValues(Cell cell){
+        String cellValue = "";
+        switch (cell.getCellType()) {
+            case STRING:
+                cellValue = cell.getStringCellValue();
+
+                break;
+            case NUMERIC:
+                cellValue = String.valueOf(cell.getNumericCellValue());
+
+                break;
+            case BOOLEAN:
+                cellValue = String.valueOf(cell.getBooleanCellValue());
+
+                break;
+            default:
+                System.out.print("Unknown\t");
+        }
+
+        return cellValue;
+    }
+
+
+    private static String checkAndGetUpdatedTime(String cellValue){
+
+        ArrayList<String> al = new ArrayList<String>();
+
+        String beforespace = "";
+
+        for(int i = 0; i< cellValue.length(); i++){
+            if(cellValue.charAt(i) == '\n' )
+            {
+                al.add(beforespace);
+                beforespace = "";
+            }else{
+                beforespace = beforespace + cellValue.charAt(i);
+            }
+        }
+
+        if (!beforespace.isEmpty()) {
+            al.add(beforespace);
+        }
+
+        String presentAndAbsent = al.get(al.size()-1);
+        String totalTime = al.get(al.size()-2);
+
+        // Define formatter to parse and format the time in "H:mm" format
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("H:mm");
+
+        // Parse the string to LocalTime
+        LocalTime time = LocalTime.parse(totalTime, formatter);
+
+        if(presentAndAbsent.equalsIgnoreCase("P")) {
+            // Check if the time is less than 12:00 (noon)
+            if (time.isBefore(LocalTime.NOON)) {
+                // Subtract 30 minutes
+                time = time.minusMinutes(30);
+            }
+        }
+        // Convert back to string for display
+        String updatedTimeString = time.format(formatter);
+
+//        System.out.println("Updated Time: " + updatedTimeString);
+        return updatedTimeString.replaceAll(":",".");
+    }
+
+
 
 
 
