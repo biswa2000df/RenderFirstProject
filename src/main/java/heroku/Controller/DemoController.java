@@ -256,6 +256,28 @@ public class DemoController {
     }
 
 
+    @Operation(summary = "List all files", description = "Retrieves a list of all files in the upload directory")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Files retrieved successfully"),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(hidden = true)))
+    })
+    @GetMapping("/api/listOfFiles")
+    public ResponseEntity<List<String>> listFiles() {
+        List<String> fileNames = new ArrayList<>();
+
+        try (DirectoryStream<Path> stream = Files.newDirectoryStream(Paths.get(UPLOAD_DIR))) {
+            for (Path path : stream) {
+                if (!Files.isDirectory(path)) {
+                    fileNames.add(path.getFileName().toString());
+                }
+            }
+            return ResponseEntity.ok(fileNames);
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+
+
 
     @GetMapping("/api/MotiExcelSheet/WorkingHourCount")
     @Operation(summary = "MotiExcelSheet WorkingHourCount")
