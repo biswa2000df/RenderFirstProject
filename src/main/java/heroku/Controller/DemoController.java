@@ -324,40 +324,17 @@ public class DemoController {
                 }
 
 
-
-
-
                 // Initialize total monthly working minutes
-                int totalMonthlyWorkingMinutes = 0;
-
-// Calculate total monthly working minutes from updatedTime list
-                for (int l = 0; l < updatedTime.size(); l++) {
-                    String timeString = updatedTime.get(l);
-
-                    // Split the time string by "."
-                    String[] parts = timeString.split("\\.");
-                    int hours = Integer.parseInt(parts[0]); // Get hours part
-                    int minutes = 0;
-
-                    // If there is a minutes part, convert it to minutes
-                    if (parts.length > 1) {
-                        minutes = Integer.parseInt(parts[1]) * 6; // Convert decimal part to minutes
+                double totalMonthlyWorkingMinutes = 0.0;
+                for (String numberStr : updatedTime) {
+                    try {
+                        double number = Double.parseDouble(numberStr);
+                        totalMonthlyWorkingMinutes += number;
+                    } catch (NumberFormatException e) {
+                        System.err.println("Error parsing number: " + numberStr);
                     }
-
-                    // Add to total working minutes
-                    totalMonthlyWorkingMinutes += (hours * 60) + minutes;
                 }
-
-// Convert total minutes to hours and remaining minutes
-                int totalMonthlyWorkingHour = totalMonthlyWorkingMinutes / 60; // Total hours
-                int remainingMinutes = totalMonthlyWorkingMinutes % 60; // Remaining minutes
-
-// Output total hours and minutes
-//                System.out.println("Total Monthly Working Hours: " + totalMonthlyWorkingHour + " hours and " + remainingMinutes + " minutes");
-
-// Assuming you want to put total monthly working hours and minutes in the new row at column `i`
-                newRow.createCell(i).setCellValue(totalMonthlyWorkingHour + "." + remainingMinutes);
-
+                newRow.createCell(i).setCellValue(totalMonthlyWorkingMinutes);
 
 
                 try (FileOutputStream fileOut = new FileOutputStream(excelFilePath)) {
