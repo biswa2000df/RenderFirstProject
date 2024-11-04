@@ -126,7 +126,7 @@ public class DemoController {
     @Operation(summary = "Mail Send")
     public String sendEmail() {
         SimpleMailMessage message = new SimpleMailMessage();
-        message.setTo("sahoo.biswajit@mahindra.com", "namratashete38@gmail.com");
+        message.setTo("sahoo.biswajit@mahindra.com", "namratashete38@gmail.com", "deotare.sandhya@mahfin.com");
         message.setSubject("Reminder: Punch In and Out for Attendance Compliance");
         message.setText(mailBody);
 
