@@ -269,7 +269,7 @@ public class DemoController {
                 }
             }
             if(fileNames.size() == 1 &&  fileNames.get(0).equalsIgnoreCase("app.jar")) {
-                return ResponseEntity.ok(new ArrayList<>());
+                return ResponseEntity.ok(Collections.singletonList("One .jar file is available."));
             }else {
             return ResponseEntity.ok(fileNames);
             }
