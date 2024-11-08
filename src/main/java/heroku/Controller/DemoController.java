@@ -268,10 +268,16 @@ public class DemoController {
                     fileNames.add(path.getFileName().toString());
                 }
             }
+
+            boolean isPresent = fileNames.stream().anyMatch(s -> s.equals("app.jar"));
+
             if(fileNames.size() == 1 &&  fileNames.get(0).equalsIgnoreCase("app.jar")) {
                 return ResponseEntity.ok(Collections.singletonList("One .jar file is available."));
+            }else if(isPresent){
+                fileNames.remove("app.jar");
+                return ResponseEntity.ok(fileNames);
             }else {
-            return ResponseEntity.ok(fileNames);
+                return ResponseEntity.ok(fileNames);
             }
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
