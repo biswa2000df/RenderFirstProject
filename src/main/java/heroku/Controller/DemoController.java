@@ -6,10 +6,9 @@ import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +30,7 @@ import java.net.MalformedURLException;
 import java.nio.file.*;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -287,6 +284,14 @@ public class DemoController {
         try (FileInputStream fis = new FileInputStream(excelFilePath);
              XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
 
+            XSSFCellStyle style = workbook.createCellStyle();
+            style.setFillBackgroundColor(IndexedColors.RED.getIndex());
+            style.setFillPattern(FillPatternType.FINE_DOTS);
+
+            XSSFFont font = workbook.createFont();
+            font.setBold(true); // Set the font to bold
+            style.setFont(font);
+
             // Access the desired sheet
             XSSFSheet sheet = workbook.getSheet("Sheet1");
 
@@ -294,9 +299,19 @@ public class DemoController {
 
             int i=0;//for column count
 
+            ArrayList<String> firstRowValue = new ArrayList<>();
 
             for (int rowIndex = 0; rowIndex <= sheet.getLastRowNum(); rowIndex++) {
                 Row row = sheet.getRow(rowIndex);
+
+                //read only for employee name
+                if (rowIndex == 0) {
+                    for (Cell cell : row) {
+                        String cellValue = getCellValues(cell);
+                        firstRowValue.add(cellValue);
+                    }
+                }
+
 
                 if (rowIndex < 4) {
                     continue;
@@ -320,9 +335,16 @@ public class DemoController {
 
                 //create cell
                 for(int k = 1; k<i; k++) {
-                    newRow.createCell(k).setCellValue(updatedTime.get(k-1));
+                    newRow.createCell(k);
+                    if(updatedTime.get(k-1).equalsIgnoreCase("MIS") ) {
+                        newRow.getCell(k).setCellValue("0.00");
+                        newRow.getCell(k).setCellStyle(style);
+                    }else {
+                        newRow.getCell(k).setCellValue(updatedTime.get(k-1));
+                    }
                 }
 
+                Collections.replaceAll(updatedTime, "MIS", "0.00");
 
                 // Initialize total monthly working minutes
                 double totalMonthlyWorkingMinutes = 0.0;
@@ -334,7 +356,16 @@ public class DemoController {
                         System.err.println("Error parsing number: " + numberStr);
                     }
                 }
+//               System.out.println("Sum of numbers: " + totalMonthlyWorkingMinutes);
+//
+//                System.out.println("first row Value = " + firstRowValue);
+                double perHourSalary = readEmpNameAndCalculateSalary(firstRowValue);
+//                System.out.println("Per Hour Salary = " + perHourSalary);
+                double totalSalaryPerMonth = totalMonthlyWorkingMinutes * perHourSalary;
+//                System.out.println("total month  Salary = " + totalSalaryPerMonth);
+
                 newRow.createCell(i).setCellValue(totalMonthlyWorkingMinutes);
+                newRow.createCell(i+1).setCellValue(totalSalaryPerMonth);
 
 
                 try (FileOutputStream fileOut = new FileOutputStream(excelFilePath)) {
@@ -406,6 +437,10 @@ public class DemoController {
         // Parse the string to LocalTime
         LocalTime time = LocalTime.parse(totalTime, formatter);
 
+        if(presentAndAbsent.equalsIgnoreCase("MIS")){
+            return "MIS";
+        }
+
         if(presentAndAbsent.equalsIgnoreCase("P")) {
             // Check if the time is less than 12:00 (noon)
             if (time.isBefore(LocalTime.NOON)) {
@@ -418,6 +453,43 @@ public class DemoController {
 
 //        System.out.println("Updated Time: " + updatedTimeString);
         return updatedTimeString.replaceAll(":",".");
+    }
+
+    public static Double readEmpNameAndCalculateSalary(ArrayList<String> firstRowValue){
+        String EmpNameFormat = null;
+        String Name = null;
+        double perHourSalary = 0;
+
+        for(int i=0;i<firstRowValue.size();i++){
+            if(firstRowValue.get(i).contains("Emp Name :")){
+                EmpNameFormat = firstRowValue.get(i);
+                break;
+            }
+        }
+        System.out.println(EmpNameFormat);
+
+        Name = EmpNameFormat.split(":")[1].trim();
+        System.out.println(Name);
+
+        Map<String, Double> map = new HashMap<>();
+        map.put("Dadasaheb kolhe", 97.5);
+        map.put("Gajanan Raut", 75.00);
+        map.put("Bhagyavendra singh", 87.5);
+        map.put("ABHISHEKH KUMAR", 87.5);
+        map.put("Narsingh Chouhan", 90.62);
+        map.put("Salim Mohameed", 87.5);
+        map.put("Bangra", 100.00);
+        map.put("Kambale", 81.25);
+        map.put("Rathod", 81.25);
+        map.put("Imamoddin Pathan", 58.33);
+
+        for (Map.Entry<String, Double> entry : map.entrySet()) {
+            if(entry.getKey().contains(Name)){
+                perHourSalary = entry.getValue();
+                break;
+            }
+        }
+        return perHourSalary;
     }
 
 
