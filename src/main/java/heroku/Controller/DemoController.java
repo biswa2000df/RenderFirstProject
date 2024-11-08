@@ -268,7 +268,11 @@ public class DemoController {
                     fileNames.add(path.getFileName().toString());
                 }
             }
+            if(fileNames.size() == 1 &&  fileNames.get(0).equalsIgnoreCase("app.jar")) {
+                return ResponseEntity.ok(new ArrayList<>());
+            }else {
             return ResponseEntity.ok(fileNames);
+            }
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
