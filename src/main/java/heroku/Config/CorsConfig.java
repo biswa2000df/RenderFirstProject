@@ -23,7 +23,7 @@ public class CorsConfig {
         config.addAllowedMethod("*");
 
         // Allow credentials
-        config.setAllowCredentials(true);
+//        config.setAllowCredentials(true);
 
         source.registerCorsConfiguration("/**", config);
         return new CorsFilter(source);
