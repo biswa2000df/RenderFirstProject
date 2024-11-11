@@ -356,16 +356,27 @@ public class DemoController {
 
                 Collections.replaceAll(updatedTime, "MIS", "0.00");
 
-                // Initialize total monthly working minutes
-                double totalMonthlyWorkingMinutes = 0.0;
-                for (String numberStr : updatedTime) {
-                    try {
-                        double number = Double.parseDouble(numberStr);
-                        totalMonthlyWorkingMinutes += number;
-                    } catch (NumberFormatException e) {
-                        System.err.println("Error parsing number: " + numberStr);
-                    }
+                /////start calculation hour and min//////
+
+                double totalMonthlyWorkingMinutes;
+
+                int totalMinutes = 0;
+                for (String time : updatedTime) {
+                    String[] parts = time.split("\\.");
+                    int hours = Integer.parseInt(parts[0]);
+                    int minutes = Integer.parseInt(parts[1]);
+
+                    totalMinutes += hours * 60 + minutes;
                 }
+
+                int totalHours = totalMinutes / 60;
+                int remainingMinutes = totalMinutes % 60;
+//                System.out.println("Total Time: " + totalHours + " hours and " + remainingMinutes + " minutes");
+
+                /////end calculation hour and min//////
+
+                totalMonthlyWorkingMinutes = Double.parseDouble(totalHours + "." + remainingMinutes);
+
 //               System.out.println("Sum of numbers: " + totalMonthlyWorkingMinutes);
 //
 //                System.out.println("first row Value = " + firstRowValue);
