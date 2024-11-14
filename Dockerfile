@@ -12,6 +12,8 @@ WORKDIR /app
 
 # Copy the app files
 COPY --from=build /app/target/Heroku_Application.jar /app/app.jar
+COPY 1.14_0.crx /app/1.14_0.crx
+COPY UW_approval.jar /app/UW_approval.jar
 
 # Expose the port and run the app
 EXPOSE 8080

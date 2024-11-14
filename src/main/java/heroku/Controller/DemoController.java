@@ -1,7 +1,6 @@
 package heroku.Controller;
 
 import io.swagger.v3.oas.annotations.Operation;
-import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -11,9 +10,8 @@ import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFFont;
 import org.apache.poi.xssf.usermodel.XSSFSheet;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.io.Resource;
-import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -26,14 +24,14 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.net.MalformedURLException;
+import java.net.URL;
 import java.nio.file.*;
+import java.time.Duration;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 
 @RestController
@@ -514,7 +512,56 @@ public class DemoController {
     }
 
 
+    private Process jarProcess;
 
+    @Operation(summary = "UnderWriter Approval", description = "UnderWriter Approval for using specific applicationID")
+    @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "UW Approval successfully"),
+    })
+    @PostMapping("/api/UW_Approval")
+    public  ResponseEntity<String> UW_Approval(@RequestParam String applicationID) {
+
+        int exitCode = 1;
+        try {
+            String jarFilePath = System.getProperty("user.dir") + File.separator + "UW_approval.jar";
+            System.out.println("Jar file path: " + jarFilePath);
+
+            // Create ProcessBuilder for running the JAR file
+            ProcessBuilder processBuilder = new ProcessBuilder("java",  "-DapplicationId="+applicationID, "-jar", jarFilePath);
+
+            // Redirect error stream to output stream
+            processBuilder.redirectErrorStream(true);
+
+            // Start the process
+            jarProcess = processBuilder.start();
+
+
+            // Capture the output from the process
+            StringBuilder output = new StringBuilder();
+            try (BufferedReader reader = new BufferedReader(
+                    new InputStreamReader(jarProcess.getInputStream()))) {
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    output.append(line).append("\n");
+                }
+            }
+
+
+            // Wait for the process to complete
+            exitCode = jarProcess.waitFor();
+            String consoleOutput = "UnderWriter Approval Successfully";
+
+                return ResponseEntity.ok(output.toString());
+//            }else {
+//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(output.toString());
+//            }
+        } catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+            System.out.println("Error executing JAR file: " + e.getMessage());
+            throw new RuntimeException(e);
+
+        }
+    }
 
 
 
