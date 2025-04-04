@@ -523,10 +523,10 @@ public class DemoController {
         XSSFWorkbook workbook = new XSSFWorkbook(fis);
 
         XSSFCellStyle style = workbook.createCellStyle();
-//        style.setBorderTop(BorderStyle.THIN);
-//        style.setBorderBottom(BorderStyle.THIN);
-//        style.setBorderLeft(BorderStyle.THIN);
-//        style.setBorderRight(BorderStyle.THIN);
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
         style.setAlignment(HorizontalAlignment.CENTER);
 //        style.setFillBackgroundColor(IndexedColors.GREEN.getIndex());
 //        style.setFillPattern(FillPatternType.FINE_DOTS);
