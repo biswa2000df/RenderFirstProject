@@ -250,12 +250,21 @@ public class DemoController {
         try (FileInputStream fis = new FileInputStream(excelFilePath);
              XSSFWorkbook workbook = new XSSFWorkbook(fis)) {
 
+            XSSFCellStyle styleMIS = workbook.createCellStyle();
+            styleMIS.setAlignment(HorizontalAlignment.CENTER);
+            styleMIS.setFillBackgroundColor(IndexedColors.RED.getIndex());
+            styleMIS.setFillPattern(FillPatternType.FINE_DOTS);
+
             XSSFCellStyle style = workbook.createCellStyle();
-            style.setFillBackgroundColor(IndexedColors.RED.getIndex());
-            style.setFillPattern(FillPatternType.FINE_DOTS);
+            style.setAlignment(HorizontalAlignment.CENTER);
+
 
             XSSFFont font = workbook.createFont();
-            font.setBold(true); // Set the font to bold
+            font.setBold(true);
+            font.setFontName("Times New Roman");
+            font.setItalic(true);
+            font.setColor(IndexedColors.BLACK.getIndex()); // Set font color to black
+            styleMIS.setFont(font);
             style.setFont(font);
 
             // Access the desired sheet
@@ -304,9 +313,10 @@ public class DemoController {
                     newRow.createCell(k);
                     if(updatedTime.get(k-1).equalsIgnoreCase("MIS") ) {
                         newRow.getCell(k).setCellValue("0.00");
-                        newRow.getCell(k).setCellStyle(style);
+                        newRow.getCell(k).setCellStyle(styleMIS);
                     }else {
-                        newRow.getCell(k).setCellValue(updatedTime.get(k-1));
+                        newRow.getCell(k).setCellValue(updatedTime.get(k-1));  //here update the time value
+                        newRow.getCell(k).setCellStyle(style);
                     }
                 }
 
@@ -512,6 +522,10 @@ public class DemoController {
         XSSFWorkbook workbook = new XSSFWorkbook(fis);
 
         XSSFCellStyle style = workbook.createCellStyle();
+        style.setBorderTop(BorderStyle.THIN);
+        style.setBorderBottom(BorderStyle.THIN);
+        style.setBorderLeft(BorderStyle.THIN);
+        style.setBorderRight(BorderStyle.THIN);
         style.setAlignment(HorizontalAlignment.CENTER);
 //        style.setFillBackgroundColor(IndexedColors.GREEN.getIndex());
 //        style.setFillPattern(FillPatternType.FINE_DOTS);
@@ -533,7 +547,7 @@ public class DemoController {
 
         int lastRowNum = sheet.getLastRowNum();
 //                System.out.println("lastrow number = " + lastRowNum);
-        Row headerRow = sheet.createRow(lastRowNum + 10);
+        Row headerRow = sheet.createRow(lastRowNum + 12);
 
         for (int k = 0; k < columnNameList.size(); k++) {
             Cell headerCell = headerRow.createCell(k);
@@ -547,7 +561,7 @@ public class DemoController {
 //        }
 
         List<Double> columnValueList = getColumnValueList(holidayHrs, misHrs, advance);
-        Row dataRow = sheet.createRow(lastRowNum + 11);
+        Row dataRow = sheet.createRow(lastRowNum + 13);
 
         // Data Row (column values)
         for (int k = 0; k < columnValueList.size(); k++) {
@@ -575,15 +589,15 @@ public class DemoController {
 
     private static List<String> getColumnNameList() {
         List<String> columnNameList = new ArrayList<String>();
-        columnNameList.add("beforeAnyCalculation_TotalWorkHrs");
-        columnNameList.add("beforeAnyCalculation_TotalSalary");
+        columnNameList.add("before_TotalWorkHrs");
+        columnNameList.add("before_TotalSalary");
         columnNameList.add("Holiday_Hrs");
         columnNameList.add("MIS_Hrs");
-        columnNameList.add("afterMISandHolidayHrs_TotalCalculationHrs");
-        columnNameList.add("afterMIS_FinalWorkHrs");
-        columnNameList.add("beforeAdvanceCalculation_TotalSalary");
-        columnNameList.add("Advance_Salary");
-        columnNameList.add("afterAllCalculationCompleted_TotalSalary");
+        columnNameList.add("MIS + Holiday");
+        columnNameList.add("FinalWorkHrs");
+        columnNameList.add("beforeAdvCal_Sal");
+        columnNameList.add("Adv_Salary");
+        columnNameList.add("FinalSalary");
         return columnNameList;
     }
 
