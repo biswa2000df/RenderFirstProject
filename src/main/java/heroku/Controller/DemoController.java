@@ -508,7 +508,8 @@ public class DemoController {
 
             finalSalaryUpdate(holidayHrs, misHrs, advance);//call file to create a new column for final salary
 
-            return "afterAllCalculationCompleted_TotalSalary = " + afterAllCalculationCompleted_TotalSalary + " beforeAdvanceCalculation_TotalSalary = " + beforeAdvanceCalculation_TotalSalary + " afterMIS_FinalWorkHrs = " + afterMIS_FinalWorkHrs + " afterMISandHolidayHrs_TotalCalculationHrs = " + afterMISandHolidayHrs_TotalCalculationHrs;
+           return "Total time and Hours are updated successfully...";
+//            return "afterAllCalculationCompleted_TotalSalary = " + afterAllCalculationCompleted_TotalSalary + " beforeAdvanceCalculation_TotalSalary = " + beforeAdvanceCalculation_TotalSalary + " afterMIS_FinalWorkHrs = " + afterMIS_FinalWorkHrs + " afterMISandHolidayHrs_TotalCalculationHrs = " + afterMISandHolidayHrs_TotalCalculationHrs;
         }
 
 
