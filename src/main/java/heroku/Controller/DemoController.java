@@ -522,21 +522,21 @@ public class DemoController {
         FileInputStream fis = new FileInputStream(excelFilePath);
         XSSFWorkbook workbook = new XSSFWorkbook(fis);
 
-//        XSSFCellStyle style = workbook.createCellStyle();
+        XSSFCellStyle style = workbook.createCellStyle();
 //        style.setBorderTop(BorderStyle.THIN);
 //        style.setBorderBottom(BorderStyle.THIN);
 //        style.setBorderLeft(BorderStyle.THIN);
 //        style.setBorderRight(BorderStyle.THIN);
-//        style.setAlignment(HorizontalAlignment.CENTER);
+        style.setAlignment(HorizontalAlignment.CENTER);
 //        style.setFillBackgroundColor(IndexedColors.GREEN.getIndex());
 //        style.setFillPattern(FillPatternType.FINE_DOTS);
 
-//        XSSFFont font = workbook.createFont();
-//        font.setBold(true);
-//        font.setFontName("Times New Roman");
-//        font.setItalic(true);
-//        font.setColor(IndexedColors.BLACK.getIndex()); // Set font color to black
-//        style.setFont(font);
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        font.setFontName("Times New Roman");
+        font.setItalic(true);
+        font.setColor(IndexedColors.BLACK.getIndex()); // Set font color to black
+        style.setFont(font);
 
             // Access the desired sheet
         XSSFSheet sheet = workbook.getSheet("Sheet1");
@@ -553,7 +553,7 @@ public class DemoController {
         for (int k = 0; k < columnNameList.size(); k++) {
             Cell headerCell = headerRow.createCell(k);
             headerCell.setCellValue(columnNameList.get(k));
-//            headerCell.setCellStyle(style); // Apply style to header cells
+            headerCell.setCellStyle(style); // Apply style to header cells
 //            sheet.autoSizeColumn(k); // Auto-size column
         }
             //create cell header
@@ -568,7 +568,7 @@ public class DemoController {
         for (int k = 0; k < columnValueList.size(); k++) {
             Cell dataCell = dataRow.createCell(k);
             dataCell.setCellValue(columnValueList.get(k));
-//            dataCell.setCellStyle(style); // Apply style to data cells
+            dataCell.setCellStyle(style); // Apply style to data cells
 //            sheet.autoSizeColumn(k); // Auto-size column
         }
 
