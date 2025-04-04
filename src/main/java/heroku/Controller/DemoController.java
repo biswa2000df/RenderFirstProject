@@ -1,5 +1,6 @@
 package heroku.Controller;
 
+import heroku.Entity.AdvanceCalculation;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
@@ -132,55 +133,6 @@ public class DemoController {
 
 
 
-    private static final String FILE_NAME = System.getProperty("user.dir") + File.separator + "data.xlsx";
-
-    public static void writeDataToExcel(List<String> data) throws IOException {
-        Workbook workbook;
-        File file = new File(FILE_NAME);
-
-        if (file.exists()) {
-            workbook = new XSSFWorkbook(new FileInputStream(file));
-        } else {
-            workbook = new XSSFWorkbook();
-            workbook.createSheet("Data");
-        }
-
-        Sheet sheet = workbook.getSheet("Data");
-        int rowCount = sheet.getLastRowNum();
-
-        Row row = sheet.createRow(++rowCount);
-        for (int i = 0; i < data.size(); i++) {
-            Cell cell = row.createCell(i);
-            cell.setCellValue(data.get(i));
-        }
-
-        try (FileOutputStream fos = new FileOutputStream(FILE_NAME)) {
-            workbook.write(fos);
-        }
-
-        workbook.close();
-    }
-
-    public static InputStream getExcelFile() throws IOException {
-        return new FileInputStream(FILE_NAME);
-    }
-
-    @PostMapping("/save")
-    @Operation(summary = "Enter Data Daily Basic")
-    public ResponseEntity<String> saveData(
-            @RequestParam String Si_No,
-            @RequestParam String DATE,
-            @RequestParam String Work_Done,
-            @RequestParam String In_Time,
-            @RequestParam String Out_Time) {
-        try {
-            writeDataToExcel(Arrays.asList(Si_No, DATE, Work_Done, In_Time, Out_Time));
-            return ResponseEntity.status(HttpStatus.CREATED).body("Data saved successfully in Excel sheet.");
-        } catch (IOException e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving data: " + e.getMessage());
-        }
-    }
-
     @GetMapping("/download/{filename:.+}") // Accept any filename including those with dots
     @Operation(summary = "Download ExcelSheet File")
     public ResponseEntity<byte[]> downloadExcel(@PathVariable String filename) {
@@ -201,7 +153,7 @@ public class DemoController {
     }
 
 
-    String uploadedFileName = "";
+    public static String uploadedFileName = "";
     private static final String UPLOAD_DIR = System.getProperty("user.dir") + File.separator ; // Set the upload directory
 
     @Operation(summary = "Upload a file", description = "Uploads a file to the server")
@@ -285,6 +237,11 @@ public class DemoController {
 
 
 
+    public static double totalMonthlyWorkingMinutes;
+    public static double perHourSalary;
+    public static double totalSalaryPerMonth;
+
+
     @GetMapping("/api/MotiExcelSheet/WorkingHourCount")
     @Operation(summary = "MotiExcelSheet WorkingHourCount")
     public String MotiExcelsheet() {
@@ -357,7 +314,7 @@ public class DemoController {
 
                 /////start calculation hour and min//////
 
-                double totalMonthlyWorkingMinutes;
+//                double totalMonthlyWorkingMinutes;
 
                 int totalMinutes = 0;
                 for (String time : updatedTime) {
@@ -379,9 +336,9 @@ public class DemoController {
 //               System.out.println("Sum of numbers: " + totalMonthlyWorkingMinutes);
 //
 //                System.out.println("first row Value = " + firstRowValue);
-                double perHourSalary = readEmpNameAndCalculateSalary(firstRowValue);
+                 perHourSalary = readEmpNameAndCalculateSalary(firstRowValue);
 //                System.out.println("Per Hour Salary = " + perHourSalary);
-                double totalSalaryPerMonth = totalMonthlyWorkingMinutes * perHourSalary;
+                 totalSalaryPerMonth = totalMonthlyWorkingMinutes * perHourSalary;
 //                System.out.println("total month  Salary = " + totalSalaryPerMonth);
 
                 newRow.createCell(i).setCellValue(totalMonthlyWorkingMinutes);
@@ -475,13 +432,13 @@ public class DemoController {
         return updatedTimeString.replaceAll(":",".");
     }
 
-    public static Double readEmpNameAndCalculateSalary(ArrayList<String> firstRowValue){
+    public static Double readEmpNameAndCalculateSalary(ArrayList<String> firstRowValue) {
         String EmpNameFormat = null;
         String Name = null;
         double perHourSalary = 0;
 
-        for(int i=0;i<firstRowValue.size();i++){
-            if(firstRowValue.get(i).contains("Emp Name :")){
+        for (int i = 0; i < firstRowValue.size(); i++) {
+            if (firstRowValue.get(i).contains("Emp Name :")) {
                 EmpNameFormat = firstRowValue.get(i);
                 break;
             }
@@ -504,7 +461,7 @@ public class DemoController {
         map.put("Imamoddin Pathan", 58.33);
 
         for (Map.Entry<String, Double> entry : map.entrySet()) {
-            if(entry.getKey().contains(Name)){
+            if (entry.getKey().contains(Name)) {
                 perHourSalary = entry.getValue();
                 break;
             }
@@ -513,57 +470,135 @@ public class DemoController {
     }
 
 
-    private Process jarProcess;
-
-    @Operation(summary = "UnderWriter Approval", description = "UnderWriter Approval for using specific applicationID")
-    @ApiResponses(value = {
-            @ApiResponse(responseCode = "200", description = "UW Approval successfully"),
-    })
-    @PostMapping("/api/UW_Approval")
-    public  ResponseEntity<String> UW_Approval(@RequestParam String applicationID) {
-
-        int exitCode = 1;
-        try {
-            String jarFilePath = System.getProperty("user.dir") + File.separator + "UW_approval.jar";
-            System.out.println("Jar file path: " + jarFilePath);
-
-            // Create ProcessBuilder for running the JAR file
-            ProcessBuilder processBuilder = new ProcessBuilder("java",  "-DapplicationId="+applicationID, "-jar", jarFilePath);
-
-            // Redirect error stream to output stream
-            processBuilder.redirectErrorStream(true);
-
-            // Start the process
-            jarProcess = processBuilder.start();
 
 
-            // Capture the output from the process
-            StringBuilder output = new StringBuilder();
-            try (BufferedReader reader = new BufferedReader(
-                    new InputStreamReader(jarProcess.getInputStream()))) {
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    output.append(line).append("\n");
-                }
-            }
+    public static double afterMISandHolidayHrs_TotalCalculationHrs;
+    public static double afterMIS_FinalWorkHrs;
+    public static double beforeAdvanceCalculation_TotalSalary;
+    public static double afterAllCalculationCompleted_TotalSalary;
+
+        @Operation(summary = "Advance Calculation ", description = "Final Advance and Salary Calculation")
+        @ApiResponses(value = {
+            @ApiResponse(responseCode = "200", description = "Advance Calculation successfully", content = @Content(mediaType = "text/plain")),
+            @ApiResponse(responseCode = "400", description = "Bad request", content = @Content(schema = @Schema(hidden = true))),
+            @ApiResponse(responseCode = "500", description = "Internal server error", content = @Content(schema = @Schema(hidden = true)))
+        })
+        @PostMapping("/AdvanceSalaryCalculation")
+        public String processData(@RequestBody AdvanceCalculation advanceCalculation) throws Exception {
+            // Access the fields from the request body
+            double holidayHrs = advanceCalculation.getHolidayHrs();
+            double misHrs = advanceCalculation.getMisHrs();
+            double advance = advanceCalculation.getAdvance();
 
 
-            // Wait for the process to complete
-            exitCode = jarProcess.waitFor();
-            String consoleOutput = "UnderWriter Approval Successfully";
+            afterMISandHolidayHrs_TotalCalculationHrs = holidayHrs + misHrs;
+            afterMIS_FinalWorkHrs = totalMonthlyWorkingMinutes + afterMISandHolidayHrs_TotalCalculationHrs;
+            beforeAdvanceCalculation_TotalSalary = afterMIS_FinalWorkHrs * perHourSalary;
+            afterAllCalculationCompleted_TotalSalary = beforeAdvanceCalculation_TotalSalary - advance;
 
-                return ResponseEntity.ok(output.toString());
-//            }else {
-//                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(output.toString());
-//            }
-        } catch (IOException | InterruptedException e) {
-            e.printStackTrace();
-            System.out.println("Error executing JAR file: " + e.getMessage());
-            throw new RuntimeException(e);
+            finalSalaryUpdate(holidayHrs, misHrs, advance);//call file to create a new column for final salary
 
+            return "afterAllCalculationCompleted_TotalSalary = " + afterAllCalculationCompleted_TotalSalary + " beforeAdvanceCalculation_TotalSalary = " + beforeAdvanceCalculation_TotalSalary + " afterMIS_FinalWorkHrs = " + afterMIS_FinalWorkHrs + " afterMISandHolidayHrs_TotalCalculationHrs = " + afterMISandHolidayHrs_TotalCalculationHrs;
         }
+
+
+
+
+    public static void finalSalaryUpdate(double holidayHrs, double misHrs, double advance) throws Exception{
+
+
+        String excelFilePath = System.getProperty("user.dir") + File.separator + uploadedFileName;
+        FileInputStream fis = new FileInputStream(excelFilePath);
+        XSSFWorkbook workbook = new XSSFWorkbook(fis);
+
+        XSSFCellStyle style = workbook.createCellStyle();
+        style.setAlignment(HorizontalAlignment.CENTER);
+//        style.setFillBackgroundColor(IndexedColors.GREEN.getIndex());
+//        style.setFillPattern(FillPatternType.FINE_DOTS);
+
+        XSSFFont font = workbook.createFont();
+        font.setBold(true);
+        font.setFontName("Times New Roman");
+        font.setItalic(true);
+        font.setColor(IndexedColors.BLACK.getIndex()); // Set font color to black
+        style.setFont(font);
+
+            // Access the desired sheet
+        XSSFSheet sheet = workbook.getSheet("Sheet1");
+
+        List<String> columnNameList = getColumnNameList();
+
+
+
+
+        int lastRowNum = sheet.getLastRowNum();
+//                System.out.println("lastrow number = " + lastRowNum);
+        Row headerRow = sheet.createRow(lastRowNum + 10);
+
+        for (int k = 0; k < columnNameList.size(); k++) {
+            Cell headerCell = headerRow.createCell(k);
+            headerCell.setCellValue(columnNameList.get(k));
+            headerCell.setCellStyle(style); // Apply style to header cells
+            sheet.autoSizeColumn(k); // Auto-size column
+        }
+            //create cell header
+//        for(int k = 0; k<columnNameList.size(); k++) {
+//            newRow.createCell(k).setCellValue(columnNameList.get(k));
+//        }
+
+        List<Double> columnValueList = getColumnValueList(holidayHrs, misHrs, advance);
+        Row dataRow = sheet.createRow(lastRowNum + 11);
+
+        // Data Row (column values)
+        for (int k = 0; k < columnValueList.size(); k++) {
+            Cell dataCell = dataRow.createCell(k);
+            dataCell.setCellValue(columnValueList.get(k));
+            dataCell.setCellStyle(style); // Apply style to data cells
+            sheet.autoSizeColumn(k); // Auto-size column
+        }
+
+        //create cell value
+//        for(int k = 0; k<columnNameList.size(); k++) {
+//            dataRow.createCell(k).setCellValue(columnValueList.get(k));
+//        }
+
+//            newRow.createCell(i).setCellValue(totalMonthlyWorkingMinutes);
+//            newRow.createCell(i+1).setCellValue(totalSalaryPerMonth);
+
+
+            try (FileOutputStream fileOut = new FileOutputStream(excelFilePath)) {
+                workbook.write(fileOut);
+            }catch (Exception e){
+
+            }
     }
 
+    private static List<String> getColumnNameList() {
+        List<String> columnNameList = new ArrayList<String>();
+        columnNameList.add("beforeAnyCalculation_TotalWorkHrs");
+        columnNameList.add("beforeAnyCalculation_TotalSalary");
+        columnNameList.add("Holiday_Hrs");
+        columnNameList.add("MIS_Hrs");
+        columnNameList.add("afterMISandHolidayHrs_TotalCalculationHrs");
+        columnNameList.add("afterMIS_FinalWorkHrs");
+        columnNameList.add("beforeAdvanceCalculation_TotalSalary");
+        columnNameList.add("Advance_Salary");
+        columnNameList.add("afterAllCalculationCompleted_TotalSalary");
+        return columnNameList;
+    }
 
-
+    private static List<Double> getColumnValueList(double Holiday_Hrs, double MIS_Hrs, double Advance_Salary) {
+        List<Double> columnNameList = new ArrayList<Double>();
+        columnNameList.add(totalMonthlyWorkingMinutes);
+        columnNameList.add(totalSalaryPerMonth);
+        columnNameList.add(Holiday_Hrs);
+        columnNameList.add(MIS_Hrs);
+        columnNameList.add(afterMISandHolidayHrs_TotalCalculationHrs);
+        columnNameList.add(afterMIS_FinalWorkHrs);
+        columnNameList.add(beforeAdvanceCalculation_TotalSalary);
+        columnNameList.add(Advance_Salary);
+        columnNameList.add(afterAllCalculationCompleted_TotalSalary);
+        return columnNameList;
+    }
 }
+
