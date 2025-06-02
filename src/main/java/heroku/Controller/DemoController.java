@@ -459,16 +459,16 @@ public class DemoController {
         System.out.println(Name);
 
         Map<String, Double> map = new HashMap<>();
-        map.put("Dadasaheb kolhe", 97.5);
-        map.put("Gajanan Raut", 75.00);
-        map.put("Bhagyavendra singh", 87.5);
-        map.put("ABHISHEKH KUMAR", 87.5);
-        map.put("Narsingh Chouhan", 90.62);
-        map.put("Salim Mohameed", 87.5);
-        map.put("Bangra", 100.00);
-        map.put("Kambale", 81.25);
-        map.put("Rathod", 81.25);
-        map.put("Imamoddin Pathan", 58.33);
+        map.put("Dadasaheb kolhe", 102.5);
+        map.put("Gajanan Raut", 81.25);
+        map.put("Bhagyavendra singh", 100.00);
+        map.put("Sourabh Bhosale", 64.12);
+        map.put("Salim Mohameed", 93.75);
+
+        
+
+
+
 
         for (Map.Entry<String, Double> entry : map.entrySet()) {
             if (entry.getKey().contains(Name)) {
