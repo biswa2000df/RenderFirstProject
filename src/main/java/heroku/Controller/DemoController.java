@@ -459,7 +459,7 @@ public class DemoController {
         System.out.println(Name);
 
         Map<String, Double> map = new HashMap<>();
-        map.put("Dadasaheb kolhe", 102.5);
+        map.put("Dadasaheb kolhe", 103.75);
         map.put("Gajanan Raut", 81.25);
         map.put("Bhagyavendra singh", 100.00);
         map.put("Sourabh Bhosale", 64.12);
